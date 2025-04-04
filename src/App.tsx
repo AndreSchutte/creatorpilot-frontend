@@ -6,6 +6,7 @@ function App() {
   const [chapters, setChapters] = useState('');
   const [loading, setLoading] = useState(false);
   const [format, setFormat] = useState('youtube');
+  const [copied, setCopied] = useState(false);
 
   const handleGenerate = async () => {
     setLoading(true);
@@ -22,6 +23,12 @@ function App() {
       setChapters('❌ Something went wrong!');
     }
     setLoading(false);
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(chapters);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -60,9 +67,25 @@ function App() {
       </button>
 
       {chapters && (
-        <pre>
-          {chapters}
-        </pre>
+        <>
+          <pre>{chapters}</pre>
+          <button
+            onClick={handleCopy}
+            style={{
+              marginTop: '1rem',
+              padding: '0.5rem 1rem',
+              backgroundColor: copied ? '#00cc99' : '#00ffff',
+              color: '#000',
+              border: 'none',
+              borderRadius: '4px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: '0.3s',
+            }}
+          >
+            {copied ? 'Copied!' : 'Copy Chapters'}
+          </button>
+        </>
       )}
     </div>
   );
