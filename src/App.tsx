@@ -84,7 +84,12 @@ function App() {
         onClick={handleGenerate}
         disabled={loading}
       >
-        {loading ? 'Generating...' : 'Generate Chapters'}
+        {loading ? (
+          <div className="spinner"></div>
+        ) : (
+        'Generate Chapters'
+        )}
+
       </button>
 
       {recent.length > 0 && (
