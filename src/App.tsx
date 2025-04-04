@@ -1,5 +1,5 @@
 import './App.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function App() {
   const [transcript, setTranscript] = useState('');
@@ -7,9 +7,24 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [format, setFormat] = useState('youtube');
   const [copied, setCopied] = useState(false);
+  const [recent, setRecent] = useState<string[]>([]);
+
+  // Load recent transcripts on mount
+  useEffect(() => {
+    const stored = localStorage.getItem('recentTranscripts');
+    if (stored) {
+      setRecent(JSON.parse(stored));
+    }
+  }, []);
 
   const handleGenerate = async () => {
     setLoading(true);
+
+    // Save to localStorage
+    const updatedRecent = [transcript, ...recent.filter((r) => r !== transcript)].slice(0, 3);
+    localStorage.setItem('recentTranscripts', JSON.stringify(updatedRecent));
+    setRecent(updatedRecent);
+
     try {
       const response = await fetch('https://creatorpilot-backend.onrender.com/api/generate-chapters', {
         method: 'POST',
@@ -22,6 +37,7 @@ function App() {
     } catch (err) {
       setChapters('❌ Something went wrong!');
     }
+
     setLoading(false);
   };
 
@@ -29,6 +45,11 @@ function App() {
     navigator.clipboard.writeText(chapters);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const loadTranscript = (text: string) => {
+    setTranscript(text);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -65,6 +86,32 @@ function App() {
       >
         {loading ? 'Generating...' : 'Generate Chapters'}
       </button>
+
+      {recent.length > 0 && (
+        <div style={{ marginTop: '2rem' }}>
+          <h3 style={{ color: '#0ff' }}>Recent Transcripts:</h3>
+          {recent.map((item, idx) => (
+            <button
+              key={idx}
+              onClick={() => loadTranscript(item)}
+              style={{
+                display: 'block',
+                margin: '0.5rem 0',
+                padding: '0.5rem',
+                backgroundColor: '#1a1a1a',
+                color: '#0ff',
+                border: '1px solid #0ff',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                width: '100%',
+                textAlign: 'left',
+              }}
+            >
+              {item.slice(0, 80)}...
+            </button>
+          ))}
+        </div>
+      )}
 
       {chapters && (
         <>
