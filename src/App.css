@@ -2,9 +2,10 @@ body {
   margin: 0;
   padding: 0;
   background-color: #0d0d0d;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Rajdhani', sans-serif;
   color: #ffffff;
 }
+
 
 .container {
   display: flex;
