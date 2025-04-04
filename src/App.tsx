@@ -9,7 +9,6 @@ function App() {
   const [copied, setCopied] = useState(false);
   const [recent, setRecent] = useState<string[]>([]);
 
-  // Load recent transcripts on mount
   useEffect(() => {
     const stored = localStorage.getItem('recentTranscripts');
     if (stored) {
@@ -20,7 +19,6 @@ function App() {
   const handleGenerate = async () => {
     setLoading(true);
 
-    // Save to localStorage
     const updatedRecent = [transcript, ...recent.filter((r) => r !== transcript)].slice(0, 3);
     localStorage.setItem('recentTranscripts', JSON.stringify(updatedRecent));
     setRecent(updatedRecent);
@@ -54,7 +52,16 @@ function App() {
 
   return (
     <div className="container">
-      <h1>YouTube Chapter Generator</h1>
+      <img
+        src="/logo.png"
+        alt="CreatorPilot Logo"
+        style={{
+          width: '160px',
+          margin: '0 auto 2rem',
+          display: 'block',
+          filter: 'drop-shadow(0 0 6px #00ffffaa)',
+        }}
+      />
 
       <textarea
         rows={10}
@@ -89,8 +96,6 @@ function App() {
         ) : (
           'Generate Chapters'
         )}
-
-
       </button>
 
       {recent.length > 0 && (
