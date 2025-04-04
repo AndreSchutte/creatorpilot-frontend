@@ -5,15 +5,15 @@ function App() {
   const [transcript, setTranscript] = useState('');
   const [chapters, setChapters] = useState('');
   const [loading, setLoading] = useState(false);
+  const [format, setFormat] = useState('youtube');
 
   const handleGenerate = async () => {
     setLoading(true);
     try {
       const response = await fetch('https://creatorpilot-backend.onrender.com/api/generate-chapters', {
-
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transcript }),
+        body: JSON.stringify({ transcript, format }),
       });
 
       const data = await response.json();
@@ -25,22 +25,34 @@ function App() {
   };
 
   return (
-    <div style={{ padding: '2rem', backgroundColor: '#111', color: '#fff', fontFamily: 'sans-serif' }}>
+    <div className="container">
       <h1>YouTube Chapter Generator</h1>
+
       <textarea
         rows={10}
-        style={{ width: '100%', padding: '1rem', fontSize: '1rem' }}
         placeholder="Paste your transcript here..."
         value={transcript}
         onChange={(e) => setTranscript(e.target.value)}
       />
-      <button
+
+      <select
+        value={format}
+        onChange={(e) => setFormat(e.target.value)}
         style={{
           marginTop: '1rem',
-          padding: '0.5rem 1rem',
-          fontSize: '1rem',
-          cursor: 'pointer',
+          padding: '0.5rem',
+          backgroundColor: '#111',
+          color: '#0ff',
+          border: '1px solid #0ff',
+          borderRadius: '5px',
         }}
+      >
+        <option value="youtube">YouTube Style</option>
+        <option value="timestamps">Timestamps Only</option>
+        <option value="markdown">Markdown Style</option>
+      </select>
+
+      <button
         onClick={handleGenerate}
         disabled={loading}
       >
@@ -48,7 +60,7 @@ function App() {
       </button>
 
       {chapters && (
-        <pre style={{ marginTop: '2rem', backgroundColor: '#222', padding: '1rem' }}>
+        <pre>
           {chapters}
         </pre>
       )}
