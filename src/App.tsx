@@ -85,10 +85,11 @@ function App() {
         disabled={loading}
       >
         {loading ? (
-          <div className="spinner"></div>
+          <div className="spinner" />
         ) : (
-        'Generate Chapters'
+          'Generate Chapters'
         )}
+
 
       </button>
 
