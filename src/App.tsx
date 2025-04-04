@@ -52,15 +52,11 @@ function App() {
 
   return (
     <div className="container">
+      {/* ✅ Logo on top */}
       <img
         src="/logo.png"
         alt="CreatorPilot Logo"
-        style={{
-          width: '160px',
-          margin: '0 auto 2rem',
-          display: 'block',
-          filter: 'drop-shadow(0 0 6px #00ffffaa)',
-        }}
+        style={{ height: '60px', marginBottom: '1.5rem' }}
       />
 
       <textarea
@@ -87,15 +83,8 @@ function App() {
         <option value="markdown">Markdown Style</option>
       </select>
 
-      <button
-        onClick={handleGenerate}
-        disabled={loading}
-      >
-        {loading ? (
-          <div className="spinner" />
-        ) : (
-          'Generate Chapters'
-        )}
+      <button onClick={handleGenerate} disabled={loading}>
+        {loading ? <div className="spinner" /> : 'Generate Chapters'}
       </button>
 
       {recent.length > 0 && (
