@@ -18,7 +18,6 @@ function App() {
 
   const handleGenerate = async () => {
     setLoading(true);
-
     const updatedRecent = [transcript, ...recent.filter((r) => r !== transcript)].slice(0, 3);
     localStorage.setItem('recentTranscripts', JSON.stringify(updatedRecent));
     setRecent(updatedRecent);
@@ -52,12 +51,23 @@ function App() {
 
   return (
     <div className="container">
-      {/* ✅ Logo on top */}
-      <img
-        src="/logo.png"
-        alt="CreatorPilot Logo"
-        style={{ height: '60px', marginBottom: '1.5rem' }}
-      />
+      {/* Navbar with Logo */}
+      <nav style={{
+        display: 'flex',
+        alignItems: 'center',
+        padding: '1rem',
+        borderBottom: '1px solid #0ff',
+        marginBottom: '2rem',
+      }}>
+        <img
+          src="/logo.png"
+          alt="CreatorPilot Logo"
+          style={{
+            height: '50px',
+            objectFit: 'contain',
+          }}
+        />
+      </nav>
 
       <textarea
         rows={10}
@@ -83,7 +93,10 @@ function App() {
         <option value="markdown">Markdown Style</option>
       </select>
 
-      <button onClick={handleGenerate} disabled={loading}>
+      <button
+        onClick={handleGenerate}
+        disabled={loading}
+      >
         {loading ? <div className="spinner" /> : 'Generate Chapters'}
       </button>
 
