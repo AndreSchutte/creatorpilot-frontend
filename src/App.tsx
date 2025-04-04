@@ -51,23 +51,19 @@ function App() {
 
   return (
     <div className="container">
-      {/* Navbar with Logo */}
-      <nav style={{
-        display: 'flex',
-        alignItems: 'center',
-        padding: '1rem',
-        borderBottom: '1px solid #0ff',
-        marginBottom: '2rem',
-      }}>
+      {/* Logo Display */}
+      <div style={{ textAlign: 'center', marginTop: '2rem', marginBottom: '2rem' }}>
         <img
           src="/logo.png"
           alt="CreatorPilot Logo"
           style={{
-            height: '50px',
-            objectFit: 'contain',
+            width: '220px',
+            maxWidth: '90%',
+            height: 'auto',
+            display: 'inline-block',
           }}
         />
-      </nav>
+      </div>
 
       <textarea
         rows={10}
