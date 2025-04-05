@@ -276,17 +276,18 @@ function Dashboard() {
                 </td>
                 <td>
                 {isOwner && !user.isOwner ? (
+                 <button
+                  onClick={() => handleToggleAdmin(user._id)}
+                   style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }}
+                  >
+                    {user.isAdmin ? 'Demote to User' : 'Promote to Admin'}
+                  </button>
+                ) : (
                  <span style={{ color: '#888' }}>
                    🔒 {user.isOwner ? 'Owner Locked' : 'Admin Locked'}
                  </span>
-                ) : (
-                 <button
-                  onClick={() => handleToggleAdmin(user._id)}
-                 style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }}
-                >
-                  {user.isAdmin ? 'Demote to User' : 'Promote to Admin'}
-                 </button>
                 )}
+
 
                 </td>
             </tr>
