@@ -1,5 +1,5 @@
 import './App.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function App() {
   const [email, setEmail] = useState('');
@@ -7,16 +7,17 @@ function App() {
   const [token, setToken] = useState('');
   const [mode, setMode] = useState<'login' | 'register'>('login');
 
-  // ✅ Load API URL from .env and log it
   const apiUrl = import.meta.env.VITE_API_URL;
-  console.log('🌐 VITE_API_URL:', apiUrl);
+
+  // ✅ Load token from localStorage on mount
+  useEffect(() => {
+    const savedToken = localStorage.getItem('token');
+    if (savedToken) {
+      setToken(savedToken);
+    }
+  }, []);
 
   const handleAuth = async () => {
-    if (!apiUrl) {
-      alert('❌ API base URL is not set.');
-      return;
-    }
-
     const endpoint = mode === 'login' ? 'login' : 'register';
 
     try {
@@ -29,6 +30,7 @@ function App() {
       const data = await response.json();
 
       if (response.ok && data.token) {
+        localStorage.setItem('token', data.token); // ✅ Store in localStorage
         setToken(data.token);
         alert('✅ Auth successful!');
       } else {
@@ -36,7 +38,7 @@ function App() {
       }
     } catch (err) {
       alert('❌ Network error');
-      console.error('❌ Fetch error:', err);
+      console.error(err);
     }
   };
 
