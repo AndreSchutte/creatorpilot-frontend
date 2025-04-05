@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 
 type Props = {
-  apiUrl: string;
-  token: string;
-  isOwner: boolean;
-};
+    apiUrl: string;
+    token: string;
+    isOwner: boolean;
+    isAdmin: boolean; // ✅ This was missing
+  };
+  
 
-function AdminPage({ apiUrl, token, isOwner }: Props) {
+function AdminPage({ apiUrl, token, isOwner, isAdmin }: Props) {
   const [users, setUsers] = useState<any[]>([]);
 
   useEffect(() => {
@@ -75,7 +77,7 @@ function AdminPage({ apiUrl, token, isOwner }: Props) {
                     : 'User'}
                 </td>
                 <td>
-                  {isOwner && !user.isOwner ? (
+                {(isOwner || isAdmin) && !user.isOwner ? (
                     <button
                       onClick={() => handleToggleAdmin(user._id)}
                       style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }}

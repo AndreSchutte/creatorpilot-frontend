@@ -115,7 +115,7 @@ function App() {
       <Routes>
         <Route path="/" element={<DashboardPage token={token} apiUrl={apiUrl} />} />
         <Route path="/profile" element={<ProfilePage token={token} apiUrl={apiUrl} />} />
-        <Route path="/admin" element={<AdminPage token={token} apiUrl={apiUrl} isAdmin={isAdmin} isOwner={isOwner} />} />
+        <Route path="/admin" element={<AdminPage token={token} apiUrl={apiUrl} isOwner={isOwner} isAdmin={isAdmin} />} />
         <Route path="/history" element={<TranscriptHistoryPage token={token} apiUrl={apiUrl} />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
