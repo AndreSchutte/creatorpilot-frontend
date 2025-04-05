@@ -1,19 +1,21 @@
 import './App.css';
 import { useState, useEffect } from 'react';
+import Dashboard from './Dashboard';
 
 function App() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [token, setToken] = useState('');
   const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const apiUrl = import.meta.env.VITE_API_URL;
 
-  // ✅ Load token from localStorage on mount
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
     if (savedToken) {
       setToken(savedToken);
+      setIsLoggedIn(true);
     }
   }, []);
 
@@ -30,8 +32,9 @@ function App() {
       const data = await response.json();
 
       if (response.ok && data.token) {
-        localStorage.setItem('token', data.token); // ✅ Store in localStorage
+        localStorage.setItem('token', data.token);
         setToken(data.token);
+        setIsLoggedIn(true);
         alert('✅ Auth successful!');
       } else {
         alert(`❌ ${data.message || 'Authentication failed'}`);
@@ -42,24 +45,23 @@ function App() {
     }
   };
 
+  if (isLoggedIn) return <Dashboard />;
+
   return (
     <div className="container">
       <h2>{mode === 'login' ? 'Log in' : 'Sign up'}</h2>
-
       <input
         type="email"
         placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       /><br />
-
       <input
         type="password"
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       /><br />
-
       <button onClick={handleAuth}>
         {mode === 'login' ? 'Login' : 'Register'}
       </button>
