@@ -8,14 +8,25 @@ function Dashboard() {
   const [chapters, setChapters] = useState('');
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
   const apiUrl = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
     if (storedToken) setToken(storedToken);
+
+    const storedTheme = localStorage.getItem('theme') as 'light' | 'dark';
+    setTheme(storedTheme || 'dark');
+    document.documentElement.setAttribute('data-theme', storedTheme || 'dark');
   }, []);
+
+  const handleThemeToggle = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -34,15 +45,9 @@ function Dashboard() {
   };
 
   const handleGenerate = async () => {
-    setErrorMessage('');
-    setSuccessMessage('');
-
-    if (!transcript.trim()) {
-      setErrorMessage('❌ Please paste or upload a transcript.');
-      return;
-    }
-
+    if (!transcript) return alert('Please paste or upload a transcript.');
     setLoading(true);
+    setSuccessMessage('');
 
     try {
       const response = await fetch(`${apiUrl}/api/generate-chapters`, {
@@ -55,33 +60,33 @@ function Dashboard() {
       });
 
       const data = await response.json();
-
       if (response.ok && data.chapters) {
         setChapters(data.chapters);
         setTranscript('');
         setSuccessMessage('✅ Chapters generated successfully!');
       } else {
-        setErrorMessage(`❌ ${data.error || 'Failed to generate chapters.'}`);
+        alert(`Error: ${data.error || 'Failed to generate chapters.'}`);
       }
     } catch (err) {
-      console.error('❌ Network error', err);
-      setErrorMessage('❌ Network error during generation');
+      console.error('❌ Generation error', err);
+      alert('❌ Network error during generation');
     } finally {
       setLoading(false);
-      setTimeout(() => {
-        setSuccessMessage('');
-        setErrorMessage('');
-      }, 4000);
     }
   };
 
   return (
     <div className="container">
-      <h2>Welcome to your Dashboard</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+        <h2>Welcome to your Dashboard</h2>
+        <button onClick={handleThemeToggle}>
+          {theme === 'dark' ? '☀ Light Mode' : '🌙 Dark Mode'}
+        </button>
+      </div>
 
       {token ? (
         <>
-          <p style={{ color: '#0f0' }}>✅ You are logged in.</p>
+          <p style={{ color: 'var(--accent-color)' }}>✅ You are logged in. Token loaded.</p>
           <button onClick={handleLogout}>Logout</button>
           <hr />
 
@@ -109,10 +114,6 @@ function Dashboard() {
           <button onClick={handleGenerate} disabled={loading}>
             {loading ? '⏳ Generating...' : 'Generate Chapters'}
           </button>
-
-          {errorMessage && (
-            <p style={{ color: 'red', marginTop: '1rem' }}>{errorMessage}</p>
-          )}
 
           {successMessage && (
             <p style={{ color: 'limegreen', marginTop: '1rem' }}>{successMessage}</p>
