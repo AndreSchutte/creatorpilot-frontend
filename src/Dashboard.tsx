@@ -1,32 +1,39 @@
 // src/Dashboard.tsx
 import { useEffect, useState } from 'react';
+import { jwtDecode } from 'jwt-decode';
+
+type DecodedToken = {
+  userId: string;
+  isAdmin?: boolean;
+};
 
 function Dashboard() {
   const [token, setToken] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [format, setFormat] = useState('Markdown');
   const [chapters, setChapters] = useState('');
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [users, setUsers] = useState<any[]>([]);
 
   const apiUrl = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
-    if (storedToken) setToken(storedToken);
+    if (storedToken) {
+      setToken(storedToken);
 
-    const storedTheme = localStorage.getItem('theme') as 'light' | 'dark';
-    setTheme(storedTheme || 'dark');
-    document.documentElement.setAttribute('data-theme', storedTheme || 'dark');
+      try {
+        const decoded = jwtDecode<DecodedToken>(storedToken);
+        if (decoded.isAdmin) {
+          setIsAdmin(true);
+        }
+      } catch (err) {
+        console.error('Token decode error:', err);
+      }
+    }
   }, []);
-
-  const handleThemeToggle = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -75,20 +82,59 @@ function Dashboard() {
     }
   };
 
+  const handleFetchUsers = async () => {
+    try {
+      const res = await fetch(`${apiUrl}/api/admin/users`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setUsers(data);
+      } else {
+        alert('❌ Failed to fetch users');
+      }
+    } catch (err) {
+      alert('❌ Network error fetching users');
+    }
+  };
+
   return (
     <div className="container">
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-        <h2>Welcome to your Dashboard</h2>
-        <button onClick={handleThemeToggle}>
-          {theme === 'dark' ? '☀ Light Mode' : '🌙 Dark Mode'}
-        </button>
-      </div>
+      <h2>Welcome to your Dashboard</h2>
 
       {token ? (
         <>
-          <p style={{ color: 'var(--accent-color)' }}>✅ You are logged in. Token loaded.</p>
+          <p style={{ color: '#0f0' }}>✅ You are logged in. Token loaded.</p>
           <button onClick={handleLogout}>Logout</button>
           <hr />
+
+          {isAdmin && (
+            <>
+              <h3>👑 Admin Tools</h3>
+              <button onClick={handleFetchUsers}>📄 View All Users</button>
+              {users.length > 0 && (
+                <table style={{ marginTop: '1rem', width: '100%', background: '#111', color: '#0ff', border: '1px solid #0ff' }}>
+                  <thead>
+                    <tr>
+                      <th>Email</th>
+                      <th>User ID</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((user, idx) => (
+                      <tr key={idx}>
+                        <td>{user.email}</td>
+                        <td>{user._id}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+              <hr />
+            </>
+          )}
 
           <h3>Paste or Upload Transcript</h3>
           <textarea
