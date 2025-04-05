@@ -90,7 +90,7 @@ function Dashboard() {
         },
       });
       const data = await res.json();
-      if (res.ok) {
+      if (res.ok && Array.isArray(data)) {
         setUsers(data);
       } else {
         alert('❌ Failed to fetch users');
@@ -115,11 +115,20 @@ function Dashboard() {
               <h3>👑 Admin Tools</h3>
               <button onClick={handleFetchUsers}>📄 View All Users</button>
               {users.length > 0 && (
-                <table style={{ marginTop: '1rem', width: '100%', background: '#111', color: '#0ff', border: '1px solid #0ff' }}>
+                <table
+                  style={{
+                    marginTop: '1rem',
+                    width: '100%',
+                    background: '#111',
+                    color: '#0ff',
+                    border: '1px solid #0ff',
+                  }}
+                >
                   <thead>
                     <tr>
                       <th>Email</th>
                       <th>User ID</th>
+                      <th>Role</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -127,6 +136,7 @@ function Dashboard() {
                       <tr key={idx}>
                         <td>{user.email}</td>
                         <td>{user._id}</td>
+                        <td>{user.isAdmin ? 'Admin' : 'User'}</td>
                       </tr>
                     ))}
                   </tbody>
