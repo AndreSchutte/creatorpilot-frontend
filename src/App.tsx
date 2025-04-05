@@ -1,5 +1,6 @@
 import './App.css';
 import { useState, useEffect } from 'react';
+import Dashboard from './Dashboard';
 
 function App() {
   const [email, setEmail] = useState('');
@@ -24,7 +25,6 @@ function App() {
       if (response.ok && data.token) {
         localStorage.setItem('token', data.token);
         setToken(data.token);
-        // ✅ Remove alert for smoother experience
       } else {
         alert(`❌ ${data.message || 'Authentication failed'}`);
       }
@@ -34,12 +34,6 @@ function App() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setToken('');
-  };
-
-  // ✅ Optional redirect effect if needed for page navigation
   useEffect(() => {
     const saved = localStorage.getItem('token');
     if (saved) {
@@ -47,15 +41,7 @@ function App() {
     }
   }, []);
 
-  if (token) {
-    return (
-      <div className="container">
-        <h2>Welcome to your Dashboard</h2>
-        <p style={{ color: 'limegreen' }}>✅ You are logged in. Token loaded.</p>
-        <button onClick={handleLogout}>Logout</button>
-      </div>
-    );
-  }
+  if (token) return <Dashboard />;
 
   return (
     <div className="container">
