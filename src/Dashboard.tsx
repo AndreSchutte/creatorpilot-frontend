@@ -26,6 +26,7 @@ function Dashboard() {
   const [history, setHistory] = useState<TranscriptRecord[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
   const itemsPerPage = 5;
 
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -139,8 +140,15 @@ function Dashboard() {
     }
   };
 
-  const paginated = history.slice((page - 1) * itemsPerPage, page * itemsPerPage);
-  const totalPages = Math.ceil(history.length / itemsPerPage);
+  const filteredHistory = history.filter(
+    (item) =>
+      item.format.toLowerCase().includes(search.toLowerCase()) ||
+      item.text.toLowerCase().includes(search.toLowerCase()) ||
+      item.result.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const paginated = filteredHistory.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+  const totalPages = Math.ceil(filteredHistory.length / itemsPerPage);
 
   return (
     <div className="container">
@@ -221,6 +229,25 @@ function Dashboard() {
             <div style={{ marginTop: '3rem' }}>
               <h3>🕓 Transcript History</h3>
 
+              <input
+                type="text"
+                placeholder="🔍 Search history..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                style={{
+                  padding: '0.5rem',
+                  width: '100%',
+                  marginBottom: '1rem',
+                  background: '#111',
+                  color: '#0ff',
+                  border: '1px solid #0ff',
+                  borderRadius: '4px',
+                }}
+              />
+
               {paginated.map((item) => (
                 <div key={item._id} style={{ background: '#1a1a1a', marginBottom: '1rem', padding: '1rem', borderRadius: '6px' }}>
                   <p><strong>Format:</strong> {item.format}</p>
@@ -235,7 +262,6 @@ function Dashboard() {
                 </div>
               ))}
 
-              {/* Pagination Controls */}
               <div style={{ marginTop: '1rem' }}>
                 <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
                   ◀ Prev
