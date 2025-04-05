@@ -28,6 +28,7 @@ function Dashboard() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const itemsPerPage = 5;
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
   const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -35,6 +36,13 @@ function Dashboard() {
     const storedToken = localStorage.getItem('token');
     if (storedToken) {
       setToken(storedToken);
+  
+      const savedTheme = localStorage.getItem('theme') as 'dark' | 'light';
+      if (savedTheme) {
+        setTheme(savedTheme);
+        document.body.className = savedTheme;
+      }
+  
       try {
         const decoded = jwtDecode<DecodedToken>(storedToken);
         if (decoded.isAdmin) setIsAdmin(true);
@@ -43,11 +51,19 @@ function Dashboard() {
       }
     }
   }, []);
+  
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     window.location.reload();
   };
+
+  const handleThemeToggle = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    document.body.className = newTheme;
+  };  
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const uploaded = e.target.files?.[0];
@@ -158,7 +174,13 @@ function Dashboard() {
         <>
           <p style={{ color: '#0f0' }}>✅ You are logged in.</p>
           <button onClick={handleLogout}>Logout</button>
+
+          <button onClick={handleThemeToggle}>
+            🌓 Switch to {theme === 'dark' ? 'Light' : 'Dark'} Mode
+          </button>
+
           <hr />
+
 
           {isAdmin && (
             <>
