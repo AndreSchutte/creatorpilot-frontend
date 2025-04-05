@@ -6,7 +6,6 @@ function Dashboard() {
   const [transcript, setTranscript] = useState('');
   const [format, setFormat] = useState('Markdown');
   const [chapters, setChapters] = useState('');
-  const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -26,7 +25,6 @@ function Dashboard() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const uploaded = e.target.files?.[0];
     if (uploaded) {
-      setFile(uploaded);
       const reader = new FileReader();
       reader.onload = (event) => {
         setTranscript(event.target?.result as string);
