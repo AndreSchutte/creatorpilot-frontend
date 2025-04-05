@@ -35,8 +35,8 @@ function App() {
         setToken(data.token);
 
         const decoded = jwtDecode<{ isAdmin: boolean; isOwner: boolean }>(data.token);
-        setIsAdmin(decoded.isAdmin);
-        setIsOwner(decoded.isOwner);
+        setIsAdmin(decoded.isAdmin || false);
+        setIsOwner(decoded.isOwner || false);
       } else {
         alert(`❌ ${data.message || 'Authentication failed'}`);
       }
@@ -47,18 +47,18 @@ function App() {
   };
 
   useEffect(() => {
-    const saved = localStorage.getItem('token');
-    if (saved) {
-      setToken(saved);
+    if (token) {
       try {
-        const decoded = jwtDecode<{ isAdmin: boolean; isOwner: boolean }>(saved);
-        setIsAdmin(decoded.isAdmin);
-        setIsOwner(decoded.isOwner);
+        const decoded = jwtDecode<{ isAdmin: boolean; isOwner: boolean }>(token);
+        setIsAdmin(decoded.isAdmin || false);
+        setIsOwner(decoded.isOwner || false);
       } catch (err) {
         console.error('Token decode failed:', err);
+        setIsAdmin(false);
+        setIsOwner(false);
       }
     }
-  }, []);
+  }, [token]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
