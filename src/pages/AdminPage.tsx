@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react';
 
-function AdminPage({ apiUrl, token, isOwner }: any) {
+type Props = {
+  apiUrl: string;
+  token: string;
+  isOwner: boolean;
+  isAdmin: boolean;
+};
+
+function AdminPage({ apiUrl, token, isOwner, isAdmin }: Props) {
   const [users, setUsers] = useState<any[]>([]);
 
   useEffect(() => {
