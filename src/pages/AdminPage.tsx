@@ -4,10 +4,9 @@ type Props = {
   apiUrl: string;
   token: string;
   isOwner: boolean;
-  isAdmin: boolean;
 };
 
-function AdminPage({ apiUrl, token, isOwner, isAdmin }: Props) {
+function AdminPage({ apiUrl, token, isOwner }: Props) {
   const [users, setUsers] = useState<any[]>([]);
 
   useEffect(() => {
