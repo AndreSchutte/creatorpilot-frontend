@@ -1,4 +1,3 @@
-// src/Dashboard.tsx
 import { useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
 
@@ -26,6 +25,8 @@ function Dashboard() {
   const [users, setUsers] = useState<any[]>([]);
   const [history, setHistory] = useState<TranscriptRecord[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 5;
 
   const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -78,10 +79,11 @@ function Dashboard() {
         setChapters(data.chapters);
         setTranscript('');
         setSuccessMessage('✅ Chapters generated successfully!');
+        handleFetchHistory();
       } else {
         alert(`Error: ${data.error || 'Failed to generate chapters.'}`);
       }
-    } catch (err) {
+    } catch {
       alert('❌ Network error during generation');
     } finally {
       setLoading(false);
@@ -110,6 +112,7 @@ function Dashboard() {
       if (res.ok) {
         setHistory(data);
         setShowHistory(true);
+        setPage(1);
       } else {
         alert('❌ Failed to fetch history');
       }
@@ -117,6 +120,27 @@ function Dashboard() {
       alert('❌ Network error fetching history');
     }
   };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this transcript?')) return;
+
+    try {
+      const res = await fetch(`${apiUrl}/api/history/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setHistory(history.filter((item) => item._id !== id));
+      } else {
+        alert('❌ Failed to delete transcript');
+      }
+    } catch {
+      alert('❌ Network error deleting transcript');
+    }
+  };
+
+  const paginated = history.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+  const totalPages = Math.ceil(history.length / itemsPerPage);
 
   return (
     <div className="container">
@@ -196,16 +220,31 @@ function Dashboard() {
           {showHistory && (
             <div style={{ marginTop: '3rem' }}>
               <h3>🕓 Transcript History</h3>
-              {history.map((item, idx) => (
-                <div key={idx} style={{ background: '#1a1a1a', marginBottom: '1rem', padding: '1rem', borderRadius: '6px' }}>
+
+              {paginated.map((item) => (
+                <div key={item._id} style={{ background: '#1a1a1a', marginBottom: '1rem', padding: '1rem', borderRadius: '6px' }}>
                   <p><strong>Format:</strong> {item.format}</p>
                   <p><strong>Created:</strong> {new Date(item.createdAt).toLocaleString()}</p>
                   <p><strong>Transcript:</strong></p>
                   <pre style={{ whiteSpace: 'pre-wrap' }}>{item.text}</pre>
                   <p><strong>Chapters:</strong></p>
                   <pre style={{ whiteSpace: 'pre-wrap' }}>{item.result}</pre>
+                  <button onClick={() => handleDelete(item._id)} style={{ marginTop: '0.5rem' }}>
+                    🗑 Delete
+                  </button>
                 </div>
               ))}
+
+              {/* Pagination Controls */}
+              <div style={{ marginTop: '1rem' }}>
+                <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
+                  ◀ Prev
+                </button>
+                <span style={{ margin: '0 1rem' }}>Page {page} of {totalPages}</span>
+                <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
+                  Next ▶
+                </button>
+              </div>
             </div>
           )}
         </>
