@@ -181,6 +181,31 @@ function Dashboard() {
     }
   };
 
+  const handleToggleAdmin = async (userId: string) => {
+    if (!confirm("Are you sure you want to toggle this user's admin status?")) return;
+  
+    try {
+      const res = await fetch(`${apiUrl}/api/admin/toggle-admin/${userId}`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      const data = await res.json();
+  
+      if (res.ok) {
+        alert('✅ User role updated');
+        handleFetchUsers(); // refresh the list
+      } else {
+        alert(`❌ ${data.message || 'Failed to update user'}`);
+      }
+    } catch {
+      alert('❌ Network error while toggling admin');
+    }
+  };
+  
+
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this transcript?')) return;
 
@@ -232,16 +257,25 @@ function Dashboard() {
               {users.length > 0 && (
                 <table style={{ marginTop: '1rem', width: '100%', background: '#111', color: '#0ff' }}>
                   <thead>
-                    <tr><th>Email</th><th>User ID</th><th>Role</th></tr>
+                  <tr><th>Email</th><th>User ID</th><th>Role</th><th>Actions</th></tr>
                   </thead>
                   <tbody>
-                    {users.map((user, idx) => (
-                      <tr key={idx}>
-                        <td>{user.email}</td>
-                        <td>{user._id}</td>
-                        <td>{user.isAdmin ? 'Admin' : 'User'}</td>
-                      </tr>
-                    ))}
+                  {users.map((user, idx) => (
+                    <tr key={idx}>
+                    <td>{user.email}</td>
+                    <td>{user._id}</td>
+                    <td>{user.isAdmin ? 'Admin' : 'User'}</td>
+                    <td>
+                        <button
+                        onClick={() => handleToggleAdmin(user._id)}
+                        style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }}
+                    >
+                        {user.isAdmin ? 'Demote to User' : 'Promote to Admin'}
+                    </button>
+                </td>
+            </tr>
+        ))}
+
                   </tbody>
                 </table>
               )}
