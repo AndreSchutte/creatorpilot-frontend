@@ -4,6 +4,7 @@ import { jwtDecode } from 'jwt-decode';
 type DecodedToken = {
   userId: string;
   isAdmin?: boolean;
+  isOwner?: boolean;
 };
 
 type TranscriptRecord = {
@@ -17,6 +18,7 @@ type TranscriptRecord = {
 function Dashboard() {
   const [token, setToken] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isOwner, setIsOwner] = useState(false); 
   const [transcript, setTranscript] = useState('');
   const [format, setFormat] = useState('Markdown');
   const [chapters, setChapters] = useState('');
@@ -67,6 +69,7 @@ function Dashboard() {
       try {
         const decoded = jwtDecode<DecodedToken>(storedToken);
         if (decoded.isAdmin) setIsAdmin(true);
+        if (decoded.isOwner) setIsOwner(true);
       } catch (err) {
         console.error('Token decode error:', err);
       }
@@ -264,14 +267,27 @@ function Dashboard() {
                     <tr key={idx}>
                     <td>{user.email}</td>
                     <td>{user._id}</td>
-                    <td>{user.isAdmin ? 'Admin' : 'User'}</td>
                     <td>
-                        <button
-                        onClick={() => handleToggleAdmin(user._id)}
-                        style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }}
-                    >
-                        {user.isAdmin ? 'Demote to User' : 'Promote to Admin'}
-                    </button>
+                    {user.isOwner
+                    ? 'Owner'
+                    : user.isAdmin
+                    ? 'Admin'
+                    : 'User'}
+                </td>
+                <td>
+                {isOwner && !user.isOwner ? (
+                 <span style={{ color: '#888' }}>
+                   🔒 {user.isOwner ? 'Owner Locked' : 'Admin Locked'}
+                 </span>
+                ) : (
+                 <button
+                  onClick={() => handleToggleAdmin(user._id)}
+                 style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }}
+                >
+                  {user.isAdmin ? 'Demote to User' : 'Promote to Admin'}
+                 </button>
+                )}
+
                 </td>
             </tr>
         ))}
