@@ -1,6 +1,7 @@
 import './App.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, Link } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 
 import DashboardPage from './pages/DashboardPage';
 import AdminPage from './pages/AdminPage';
@@ -12,6 +13,8 @@ function App() {
   const [password, setPassword] = useState('');
   const [token, setToken] = useState(localStorage.getItem('token') || '');
   const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
 
   const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -30,6 +33,10 @@ function App() {
       if (response.ok && data.token) {
         localStorage.setItem('token', data.token);
         setToken(data.token);
+
+        const decoded = jwtDecode<{ isAdmin: boolean; isOwner: boolean }>(data.token);
+        setIsAdmin(decoded.isAdmin);
+        setIsOwner(decoded.isOwner);
       } else {
         alert(`❌ ${data.message || 'Authentication failed'}`);
       }
@@ -39,9 +46,25 @@ function App() {
     }
   };
 
+  useEffect(() => {
+    const saved = localStorage.getItem('token');
+    if (saved) {
+      setToken(saved);
+      try {
+        const decoded = jwtDecode<{ isAdmin: boolean; isOwner: boolean }>(saved);
+        setIsAdmin(decoded.isAdmin);
+        setIsOwner(decoded.isOwner);
+      } catch (err) {
+        console.error('Token decode failed:', err);
+      }
+    }
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     setToken('');
+    setIsAdmin(false);
+    setIsOwner(false);
   };
 
   if (!token) {
@@ -75,27 +98,28 @@ function App() {
   }
 
   return (
+    <div className="container">
+      <h2>Welcome to your Dashboard</h2>
+      <p style={{ color: '#0f0' }}>✅ You are logged in.</p>
+      <button onClick={handleLogout}>Logout</button>
 
-      <div className="container">
-        <h2>Welcome to your Dashboard</h2>
-        <p style={{ color: '#0f0' }}>✅ You are logged in.</p>
-        <button onClick={handleLogout}>Logout</button>
-
-        <nav style={{ margin: '1rem 0', display: 'flex', gap: '1rem' }}>
-          <Link to="/">🏠 Home</Link>
-          <Link to="/profile">👤 Profile</Link>
+      <nav style={{ margin: '1rem 0', display: 'flex', gap: '1rem' }}>
+        <Link to="/">🏠 Home</Link>
+        <Link to="/profile">👤 Profile</Link>
+        {(isAdmin || isOwner) && (
           <Link to="/admin">👑 Admin Tools</Link>
-          <Link to="/history">📚 History</Link>
-        </nav>
+        )}
+        <Link to="/history">📚 History</Link>
+      </nav>
 
-        <Routes>
-          <Route path="/" element={<DashboardPage token={token} apiUrl={apiUrl} />} />
-          <Route path="/profile" element={<ProfilePage token={token} apiUrl={apiUrl} />} />
-          <Route path="/admin" element={<AdminPage token={token} apiUrl={apiUrl} />} />
-          <Route path="/history" element={<TranscriptHistoryPage token={token} apiUrl={apiUrl} />} />
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="/" element={<DashboardPage token={token} apiUrl={apiUrl} />} />
+        <Route path="/profile" element={<ProfilePage token={token} apiUrl={apiUrl} />} />
+        <Route path="/admin" element={<AdminPage token={token} apiUrl={apiUrl} />} />
+        <Route path="/history" element={<TranscriptHistoryPage token={token} apiUrl={apiUrl} />} />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </div>
   );
 }
 
