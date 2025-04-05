@@ -1,23 +1,13 @@
 import './App.css';
 import { useState, useEffect } from 'react';
-import Dashboard from './Dashboard';
 
 function App() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [token, setToken] = useState('');
+  const [token, setToken] = useState(localStorage.getItem('token') || '');
   const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const apiUrl = import.meta.env.VITE_API_URL;
-
-  useEffect(() => {
-    const savedToken = localStorage.getItem('token');
-    if (savedToken) {
-      setToken(savedToken);
-      setIsLoggedIn(true);
-    }
-  }, []);
 
   const handleAuth = async () => {
     const endpoint = mode === 'login' ? 'login' : 'register';
@@ -34,8 +24,7 @@ function App() {
       if (response.ok && data.token) {
         localStorage.setItem('token', data.token);
         setToken(data.token);
-        setIsLoggedIn(true);
-        alert('✅ Auth successful!');
+        // ✅ Remove alert for smoother experience
       } else {
         alert(`❌ ${data.message || 'Authentication failed'}`);
       }
@@ -45,7 +34,28 @@ function App() {
     }
   };
 
-  if (isLoggedIn) return <Dashboard />;
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setToken('');
+  };
+
+  // ✅ Optional redirect effect if needed for page navigation
+  useEffect(() => {
+    const saved = localStorage.getItem('token');
+    if (saved) {
+      setToken(saved);
+    }
+  }, []);
+
+  if (token) {
+    return (
+      <div className="container">
+        <h2>Welcome to your Dashboard</h2>
+        <p style={{ color: 'limegreen' }}>✅ You are logged in. Token loaded.</p>
+        <button onClick={handleLogout}>Logout</button>
+      </div>
+    );
+  }
 
   return (
     <div className="container">
@@ -72,8 +82,6 @@ function App() {
           {mode === 'login' ? 'Register' : 'Login'}
         </button>
       </p>
-
-      {token && <p style={{ color: '#0f0' }}>JWT Token saved!</p>}
     </div>
   );
 }
