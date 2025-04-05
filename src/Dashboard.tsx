@@ -29,6 +29,10 @@ function Dashboard() {
   const [search, setSearch] = useState('');
   const itemsPerPage = 5;
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [name, setName] = useState('');
+  const [bio, setBio] = useState('');
+  const [profileMessage, setProfileMessage] = useState('');
+
 
   const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -36,6 +40,23 @@ function Dashboard() {
     const storedToken = localStorage.getItem('token');
     if (storedToken) {
       setToken(storedToken);
+
+      const fetchProfile = async () => {
+        try {
+          const res = await fetch(`${apiUrl}/api/profile`, {
+            headers: { Authorization: `Bearer ${storedToken}` },
+          });
+          const data = await res.json();
+          if (res.ok) {
+            setName(data.name || '');
+            setBio(data.bio || '');
+          }
+        } catch (err) {
+          console.error('❌ Failed to load profile', err);
+        }
+      };
+      fetchProfile();
+      
   
       const savedTheme = localStorage.getItem('theme') as 'dark' | 'light';
       if (savedTheme) {
@@ -57,6 +78,28 @@ function Dashboard() {
     localStorage.removeItem('token');
     window.location.reload();
   };
+
+  const handleSaveProfile = async () => {
+    try {
+      const res = await fetch(`${apiUrl}/api/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name, bio }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setProfileMessage('✅ Profile updated successfully');
+      } else {
+        setProfileMessage(`❌ ${data.message}`);
+      }
+    } catch {
+      setProfileMessage('❌ Failed to update profile');
+    }
+  };
+  
 
   const handleThemeToggle = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
@@ -205,6 +248,27 @@ function Dashboard() {
               <hr />
             </>
           )}
+          
+          <h3>👤 Your Profile</h3>
+          <input
+            type="text"
+            placeholder="Your Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            style={{ width: '100%', padding: '0.5rem', marginBottom: '0.5rem' }}
+          />
+          <textarea
+            placeholder="Your Bio"
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            rows={3}
+            style={{ width: '100%', padding: '0.5rem', marginBottom: '0.5rem' }}
+          />
+          <button onClick={handleSaveProfile}>💾 Save Profile</button>
+          {profileMessage && (
+            <p style={{ marginTop: '0.5rem', color: 'lime' }}>{profileMessage}</p>
+          )}
+          <hr />
 
           <h3>Paste or Upload Transcript</h3>
           <textarea
