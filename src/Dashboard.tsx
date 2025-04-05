@@ -1,4 +1,3 @@
-// src/Dashboard.tsx
 import { useEffect, useState } from 'react';
 
 function Dashboard() {
@@ -20,18 +19,38 @@ function Dashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    window.location.reload(); // Force return to login screen
+    window.location.reload();
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const uploaded = e.target.files?.[0];
-    if (uploaded) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setTranscript(event.target?.result as string);
-      };
-      reader.readAsText(uploaded);
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ['text/plain'];
+    const maxSize = 1 * 1024 * 1024; // 1MB
+
+    if (!allowedTypes.includes(file.type)) {
+      alert('❌ Unsupported file type. Please upload a .txt file.');
+      return;
     }
+
+    if (file.size > maxSize) {
+      alert('❌ File too large. Max size is 1MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setTranscript(event.target.result as string);
+      } else {
+        alert('❌ Failed to read file.');
+      }
+    };
+    reader.onerror = () => {
+      alert('❌ Error reading file.');
+    };
+    reader.readAsText(file);
   };
 
   const handleGenerate = async () => {
