@@ -1,6 +1,6 @@
 import './App.css';
 import { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
+import { Routes, Route, Navigate, Link } from 'react-router-dom';
 
 import DashboardPage from './pages/DashboardPage';
 import AdminPage from './pages/AdminPage';
@@ -75,7 +75,7 @@ function App() {
   }
 
   return (
-    <Router>
+
       <div className="container">
         <h2>Welcome to your Dashboard</h2>
         <p style={{ color: '#0f0' }}>✅ You are logged in.</p>
@@ -96,7 +96,6 @@ function App() {
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
-    </Router>
   );
 }
 
