@@ -36,7 +36,7 @@ function App() {
 
   return (
     <div className="container">
-      <h2>{mode === 'login' ? 'Login' : 'Register'}</h2>
+      <h2>{mode === 'login' ? 'Log in' : 'Sign up'}</h2>
       <input
         type="email"
         placeholder="Email"
