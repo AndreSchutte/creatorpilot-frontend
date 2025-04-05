@@ -7,6 +7,7 @@ function Dashboard() {
   const [format, setFormat] = useState('Markdown');
   const [chapters, setChapters] = useState('');
   const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -36,6 +37,7 @@ function Dashboard() {
   const handleGenerate = async () => {
     if (!transcript) return alert('Please paste or upload a transcript.');
     setLoading(true);
+    setSuccessMessage('');
 
     try {
       const response = await fetch(`${apiUrl}/api/generate-chapters`, {
@@ -50,6 +52,8 @@ function Dashboard() {
       const data = await response.json();
       if (response.ok && data.chapters) {
         setChapters(data.chapters);
+        setTranscript('');
+        setSuccessMessage('✅ Chapters generated successfully!');
       } else {
         alert(`Error: ${data.error || 'Failed to generate chapters.'}`);
       }
@@ -95,6 +99,10 @@ function Dashboard() {
           <button onClick={handleGenerate} disabled={loading}>
             {loading ? '⏳ Generating...' : 'Generate Chapters'}
           </button>
+
+          {successMessage && (
+            <p style={{ color: 'limegreen', marginTop: '1rem' }}>{successMessage}</p>
+          )}
 
           {chapters && (
             <div style={{ marginTop: '2rem' }}>
