@@ -1,3 +1,4 @@
+// src/Dashboard.tsx
 import { useEffect, useState } from 'react';
 
 function Dashboard() {
@@ -7,14 +8,13 @@ function Dashboard() {
   const [chapters, setChapters] = useState('');
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const apiUrl = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
-    if (storedToken) {
-      setToken(storedToken);
-    }
+    if (storedToken) setToken(storedToken);
   }, []);
 
   const handleLogout = () => {
@@ -23,40 +23,26 @@ function Dashboard() {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const allowedTypes = ['text/plain'];
-    const maxSize = 1 * 1024 * 1024; // 1MB
-
-    if (!allowedTypes.includes(file.type)) {
-      alert('❌ Unsupported file type. Please upload a .txt file.');
-      return;
+    const uploaded = e.target.files?.[0];
+    if (uploaded) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setTranscript(event.target?.result as string);
+      };
+      reader.readAsText(uploaded);
     }
-
-    if (file.size > maxSize) {
-      alert('❌ File too large. Max size is 1MB.');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      if (event.target?.result) {
-        setTranscript(event.target.result as string);
-      } else {
-        alert('❌ Failed to read file.');
-      }
-    };
-    reader.onerror = () => {
-      alert('❌ Error reading file.');
-    };
-    reader.readAsText(file);
   };
 
   const handleGenerate = async () => {
-    if (!transcript) return alert('Please paste or upload a transcript.');
-    setLoading(true);
+    setErrorMessage('');
     setSuccessMessage('');
+
+    if (!transcript.trim()) {
+      setErrorMessage('❌ Please paste or upload a transcript.');
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const response = await fetch(`${apiUrl}/api/generate-chapters`, {
@@ -69,18 +55,23 @@ function Dashboard() {
       });
 
       const data = await response.json();
+
       if (response.ok && data.chapters) {
         setChapters(data.chapters);
         setTranscript('');
         setSuccessMessage('✅ Chapters generated successfully!');
       } else {
-        alert(`Error: ${data.error || 'Failed to generate chapters.'}`);
+        setErrorMessage(`❌ ${data.error || 'Failed to generate chapters.'}`);
       }
     } catch (err) {
-      console.error('❌ Generation error', err);
-      alert('❌ Network error during generation');
+      console.error('❌ Network error', err);
+      setErrorMessage('❌ Network error during generation');
     } finally {
       setLoading(false);
+      setTimeout(() => {
+        setSuccessMessage('');
+        setErrorMessage('');
+      }, 4000);
     }
   };
 
@@ -90,7 +81,7 @@ function Dashboard() {
 
       {token ? (
         <>
-          <p style={{ color: '#0f0' }}>✅ You are logged in. Token loaded.</p>
+          <p style={{ color: '#0f0' }}>✅ You are logged in.</p>
           <button onClick={handleLogout}>Logout</button>
           <hr />
 
@@ -118,6 +109,10 @@ function Dashboard() {
           <button onClick={handleGenerate} disabled={loading}>
             {loading ? '⏳ Generating...' : 'Generate Chapters'}
           </button>
+
+          {errorMessage && (
+            <p style={{ color: 'red', marginTop: '1rem' }}>{errorMessage}</p>
+          )}
 
           {successMessage && (
             <p style={{ color: 'limegreen', marginTop: '1rem' }}>{successMessage}</p>
