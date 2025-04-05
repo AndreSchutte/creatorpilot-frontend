@@ -7,6 +7,14 @@ type DecodedToken = {
   isAdmin?: boolean;
 };
 
+type TranscriptRecord = {
+  _id: string;
+  text: string;
+  result: string;
+  format: string;
+  createdAt: string;
+};
+
 function Dashboard() {
   const [token, setToken] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
@@ -16,6 +24,8 @@ function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [users, setUsers] = useState<any[]>([]);
+  const [history, setHistory] = useState<TranscriptRecord[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
 
   const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -23,12 +33,9 @@ function Dashboard() {
     const storedToken = localStorage.getItem('token');
     if (storedToken) {
       setToken(storedToken);
-
       try {
         const decoded = jwtDecode<DecodedToken>(storedToken);
-        if (decoded.isAdmin) {
-          setIsAdmin(true);
-        }
+        if (decoded.isAdmin) setIsAdmin(true);
       } catch (err) {
         console.error('Token decode error:', err);
       }
@@ -75,7 +82,6 @@ function Dashboard() {
         alert(`Error: ${data.error || 'Failed to generate chapters.'}`);
       }
     } catch (err) {
-      console.error('❌ Generation error', err);
       alert('❌ Network error during generation');
     } finally {
       setLoading(false);
@@ -85,18 +91,30 @@ function Dashboard() {
   const handleFetchUsers = async () => {
     try {
       const res = await fetch(`${apiUrl}/api/admin/users`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (res.ok && Array.isArray(data)) {
-        setUsers(data);
-      } else {
-        alert('❌ Failed to fetch users');
-      }
-    } catch (err) {
+      if (res.ok) setUsers(data);
+      else alert('❌ Failed to fetch users');
+    } catch {
       alert('❌ Network error fetching users');
+    }
+  };
+
+  const handleFetchHistory = async () => {
+    try {
+      const res = await fetch(`${apiUrl}/api/history`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setHistory(data);
+        setShowHistory(true);
+      } else {
+        alert('❌ Failed to fetch history');
+      }
+    } catch {
+      alert('❌ Network error fetching history');
     }
   };
 
@@ -106,7 +124,7 @@ function Dashboard() {
 
       {token ? (
         <>
-          <p style={{ color: '#0f0' }}>✅ You are logged in. Token loaded.</p>
+          <p style={{ color: '#0f0' }}>✅ You are logged in.</p>
           <button onClick={handleLogout}>Logout</button>
           <hr />
 
@@ -115,21 +133,9 @@ function Dashboard() {
               <h3>👑 Admin Tools</h3>
               <button onClick={handleFetchUsers}>📄 View All Users</button>
               {users.length > 0 && (
-                <table
-                  style={{
-                    marginTop: '1rem',
-                    width: '100%',
-                    background: '#111',
-                    color: '#0ff',
-                    border: '1px solid #0ff',
-                  }}
-                >
+                <table style={{ marginTop: '1rem', width: '100%', background: '#111', color: '#0ff' }}>
                   <thead>
-                    <tr>
-                      <th>Email</th>
-                      <th>User ID</th>
-                      <th>Role</th>
-                    </tr>
+                    <tr><th>Email</th><th>User ID</th><th>Role</th></tr>
                   </thead>
                   <tbody>
                     {users.map((user, idx) => (
@@ -158,17 +164,17 @@ function Dashboard() {
           <input type="file" accept=".txt" onChange={handleFileChange} /><br /><br />
 
           <label htmlFor="format">Format:</label>{' '}
-          <select
-            id="format"
-            value={format}
-            onChange={(e) => setFormat(e.target.value)}
-          >
+          <select id="format" value={format} onChange={(e) => setFormat(e.target.value)}>
             <option>Markdown</option>
             <option>Plain Text</option>
           </select><br /><br />
 
           <button onClick={handleGenerate} disabled={loading}>
             {loading ? '⏳ Generating...' : 'Generate Chapters'}
+          </button>
+
+          <button onClick={handleFetchHistory} style={{ marginLeft: '1rem' }}>
+            📚 View Transcript History
           </button>
 
           {successMessage && (
@@ -181,27 +187,25 @@ function Dashboard() {
               <pre style={{ background: '#111', padding: '1rem', borderRadius: '5px' }}>
                 {chapters}
               </pre>
-
               <button onClick={() => navigator.clipboard.writeText(chapters)}>
                 📋 Copy to Clipboard
               </button>
+            </div>
+          )}
 
-              <button
-                onClick={() => {
-                  const blob = new Blob([chapters], { type: 'text/plain' });
-                  const url = URL.createObjectURL(blob);
-                  const link = document.createElement('a');
-                  link.href = url;
-                  link.download = 'chapters.txt';
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
-                  URL.revokeObjectURL(url);
-                }}
-                style={{ marginLeft: '1rem' }}
-              >
-                ⬇ Download as .txt
-              </button>
+          {showHistory && (
+            <div style={{ marginTop: '3rem' }}>
+              <h3>🕓 Transcript History</h3>
+              {history.map((item, idx) => (
+                <div key={idx} style={{ background: '#1a1a1a', marginBottom: '1rem', padding: '1rem', borderRadius: '6px' }}>
+                  <p><strong>Format:</strong> {item.format}</p>
+                  <p><strong>Created:</strong> {new Date(item.createdAt).toLocaleString()}</p>
+                  <p><strong>Transcript:</strong></p>
+                  <pre style={{ whiteSpace: 'pre-wrap' }}>{item.text}</pre>
+                  <p><strong>Chapters:</strong></p>
+                  <pre style={{ whiteSpace: 'pre-wrap' }}>{item.result}</pre>
+                </div>
+              ))}
             </div>
           )}
         </>
