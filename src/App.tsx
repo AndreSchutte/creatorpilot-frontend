@@ -7,6 +7,7 @@ import DashboardPage from './pages/DashboardPage';
 import AdminPage from './pages/AdminPage';
 import ProfilePage from './pages/ProfilePage';
 import TranscriptHistoryPage from './pages/TranscriptHistoryPage';
+import GenerateTitlesPage from './pages/GenerateTitlesPage';
 
 function App() {
   const [email, setEmail] = useState('');
@@ -110,6 +111,7 @@ function App() {
           <Link to="/admin">👑 Admin Tools</Link>
         )}
         <Link to="/history">📚 History</Link>
+        <Link to="/generate-titles">🧠 Generate Titles</Link>
       </nav>
 
       <Routes>
@@ -118,6 +120,7 @@ function App() {
         <Route path="/admin" element={<AdminPage token={token} apiUrl={apiUrl} isOwner={isOwner} />} />
         <Route path="/history" element={<TranscriptHistoryPage token={token} apiUrl={apiUrl} />} />
         <Route path="*" element={<Navigate to="/" />} />
+        <Route path="/generate-titles" element={<GenerateTitlesPage token={token} apiUrl={apiUrl} />} />
       </Routes>
     </div>
   );
