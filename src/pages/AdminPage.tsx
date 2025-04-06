@@ -4,11 +4,11 @@ type Props = {
     apiUrl: string;
     token: string;
     isOwner: boolean;
-    isAdmin: boolean; // ✅ This was missing
+
   };
   
 
-function AdminPage({ apiUrl, token, isOwner, isAdmin }: Props) {
+function AdminPage({ apiUrl, token, isOwner }: Props) {
   const [users, setUsers] = useState<any[]>([]);
 
   useEffect(() => {
@@ -77,18 +77,18 @@ function AdminPage({ apiUrl, token, isOwner, isAdmin }: Props) {
                     : 'User'}
                 </td>
                 <td>
-                {(isOwner || isAdmin) && !user.isOwner ? (
-                    <button
-                      onClick={() => handleToggleAdmin(user._id)}
+                 {isOwner && !user.isOwner ? (
+                   <button
+                   onClick={() => handleToggleAdmin(user._id)}
                       style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }}
                     >
-                      {user.isAdmin ? 'Demote to User' : 'Promote to Admin'}
-                    </button>
-                  ) : (
-                    <span style={{ color: '#888' }}>
+                     {user.isAdmin ? 'Demote to User' : 'Promote to Admin'}
+                   </button>
+                 ) : (
+                   <span style={{ color: '#888' }}>
                       🔒 {user.isOwner ? 'Owner Locked' : 'Admin Locked'}
                     </span>
-                  )}
+                 )}
                 </td>
               </tr>
             ))}
